@@ -7,4 +7,11 @@ sources:
       - name: donation
         identifier: CFR_Donations__1_
         description: google sheet source
+
+
+models:
+  - name: donation
+    tests:
+      - validate_donation_amount
+      - validate_length
     
