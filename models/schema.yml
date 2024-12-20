@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: source_mad_donations
+    schema: staging
+    tables:
+      - name: donation
+        identifier: CFR_Donations__1_
+        description: google sheet source
+    
