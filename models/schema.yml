@@ -1,17 +1,11 @@
 version: 2
 
 sources:
-  - name: source_mad_donations
+  - name: source_mad
     schema: staging
     tables:
-      - name: donation
-        identifier: CFR_Donations__1_
-        description: google sheet source
+      - name: user_data_int
+        identifier: User_DATA_v2
+        description: Platform common api
 
-
-models:
-  - name: donation
-    tests:
-      - validate_donation_amount
-      - validate_length
     
