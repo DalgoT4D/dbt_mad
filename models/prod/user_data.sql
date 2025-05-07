@@ -1,9 +1,8 @@
 {{ config(
-  materialized='table'
+  materialized = 'table'
 ) }}
 
-
-select
+SELECT
   city,
   email,
   state,
@@ -14,6 +13,7 @@ select
   user_login,
   user_display_name,
   user_created_datetime,
-  user_updated_datetime
-from {{ref('user_data_int')}}
-
+  user_updated_datetime,
+  'password'          AS password,          -- constant default value
+  NULL                AS updated_password
+FROM {{ ref('user_data_int') }}
