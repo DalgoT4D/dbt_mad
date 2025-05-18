@@ -2,4 +2,4 @@
 
 SELECT
    * 
-FROM {{ ref('child_attendance') }}
+FROM {{ ref('child_attendance_int') }}
