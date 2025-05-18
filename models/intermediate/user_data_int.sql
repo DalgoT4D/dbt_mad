@@ -4,7 +4,7 @@
 
 
 with source as (
-  select * from {{ source('source_mad', 'user_data_int') }}
+  select * from {{ source('source_platform_commons', 'user_data_int') }}
 ),
 
 renamed as (
