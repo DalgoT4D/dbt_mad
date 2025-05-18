@@ -40,7 +40,7 @@ sources:
       - name: school_id_int
         identifier: School_IDs
         description: Platform common api
-      - name: target_setting_int
+      - name: target_settings_int
         identifier: Target_Setting_
         description: Platform common api
       - name: volunteer_retention_d_int
