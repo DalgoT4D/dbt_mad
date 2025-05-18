@@ -1,7 +1,7 @@
 version: 2
 
 sources:
-  - name: source_mad
+  - name: source_platform_commons 
     schema: staging
     tables:
       - name: user_data_int
