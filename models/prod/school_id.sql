@@ -2,4 +2,4 @@
 
 SELECT
    * 
-FROM {{ ref('students_ids_int') }}
+FROM {{ ref('school_id_int') }}

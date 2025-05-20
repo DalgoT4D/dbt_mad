@@ -9,4 +9,4 @@ SELECT
         ELSE NULL
     END AS user_updated_date_time
 
-FROM {{ source('source_platform_commons', 'students_ids_int') }}
+FROM {{ source('source_platform_commons', 'school_id_int') }}
