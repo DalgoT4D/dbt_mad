@@ -19,14 +19,7 @@ SELECT
 
     "DisplayName" AS display_name,
     "MobileNumber" AS mobile_number,
-    "ApplicationID" AS application_id,
-
-    CASE
-        WHEN "DateOfJoining" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("DateOfJoining", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS date_of_joining,
-
+    "ApplicationID" AS application_id,,
     "HowDidYouHear" AS how_did_you_hear,
     "OpportunityId" AS opportunity_id,
     "ReferrerMedium" AS referrer_medium,
@@ -34,16 +27,24 @@ SELECT
     "AreaOfResidence" AS area_of_residence,
     "ReferrerCampaign" AS referrer_campaign,
     "ApplicationStatus" AS application_status,
+    "CurrentStepStatus" AS current_step_status,
     "PrimaryEmailAddress" AS primary_email_address,
     "SourcedByUserId" AS sourced_by_user_id,
     "Referrer" AS referrer,
     "ReferrerLogin" As referrer_login,
+    "CurrentlyDoing" AS currently_doing,
 
     CASE
         WHEN "UserUpdatedDateTime" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
         THEN TO_TIMESTAMP("UserUpdatedDateTime", 'YYYY-MM-DD"T"HH24:MI:SS')
         ELSE NULL
     END AS user_updated_date_time,
+
+    CASE
+        WHEN "ApplicationDateTime" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
+        THEN TO_TIMESTAMP("ApplicationDateTime", 'YYYY-MM-DD"T"HH24:MI:SS')
+        ELSE NULL
+    END AS application_date_time,
 
     "SelectedForWorkNodeName" AS selected_for_work_node_name,
     "SelectedForWorkNodeType" AS selected_for_work_node_type,
