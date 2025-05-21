@@ -19,7 +19,6 @@ SELECT
 
     "DisplayName" AS display_name,
     "MobileNumber" AS mobile_number,
-    "RoleAssigned" AS role_assigned,
     "ApplicationID" AS application_id,
 
     CASE
@@ -30,21 +29,15 @@ SELECT
 
     "HowDidYouHear" AS how_did_you_hear,
     "OpportunityId" AS opportunity_id,
-    "CurrentlyDoing" AS currently_doing,
     "ReferrerMedium" AS referrer_medium,
     "ReferrerSource" AS referrer_source,
     "AreaOfResidence" AS area_of_residence,
     "ReferrerCampaign" AS referrer_campaign,
     "ApplicationStatus" AS application_status,
-    "CurrentStepStatus" AS current_step_status,
-
-    CASE
-        WHEN "ApplicationDateTime" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("ApplicationDateTime", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS application_date_time,
-
     "PrimaryEmailAddress" AS primary_email_address,
+    "SourcedByUserId" AS sourced_by_user_id,
+    "Referrer" AS referrer,
+    "ReferrerLogin" As referrer_login,
 
     CASE
         WHEN "UserUpdatedDateTime" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
