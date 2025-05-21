@@ -13,6 +13,9 @@ sources:
       - name: applicant_data_2024_int
         identifier: Applicant_Data_2024
         description: Platform common api
+      - name: applicant_data_2025_int
+        identifier: Applicant_Data_2025
+        description: Platform common api
       - name: child_attendance_int
         identifier: Child_Attendence
         description: Platform common api
@@ -30,9 +33,6 @@ sources:
         description: Platform common api
       - name: fundraising_donations_int
         identifier: Fundraising_Donations
-        description: Platform common api
-      - name: mad_opportunity_int
-        identifier: MAD_Opportunity_2909
         description: Platform common api
       - name: students_data_int
         identifier: Students_Data

@@ -66,4 +66,4 @@ SELECT
     "ChildProtectionPolicyAccepted" AS child_protection_policy_accepted,
     "SelectedForParentWorkNodeType" AS selected_for_parent_work_node_type
 
-FROM {{ source('source_platform_commons', 'mad_opportunity_int') }}
+FROM {{ source('source_platform_commons', 'applicant_data_2025_int') }}
