@@ -19,7 +19,7 @@ SELECT
 
     "DisplayName" AS display_name,
     "MobileNumber" AS mobile_number,
-    "ApplicationID" AS application_id,,
+    "ApplicationID" AS application_id,
     "HowDidYouHear" AS how_did_you_hear,
     "OpportunityId" AS opportunity_id,
     "ReferrerMedium" AS referrer_medium,
