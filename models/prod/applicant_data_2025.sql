@@ -2,4 +2,4 @@
 
 SELECT
    * 
-FROM {{ ref('mad_opportunity_int') }}
+FROM {{ ref('applicant_data_2025_int') }}
