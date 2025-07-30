@@ -27,12 +27,12 @@ SELECT
     END AS modified_date,
 
     "last_name_text" AS last_name,
-    "child_id_number" AS child_id,
+    "child_id_number"::text AS child_id,
     "first_name_text" AS first_name,
     "removed_boolean" AS is_removed,
     "is_active_boolean" AS is_active,
     "mother_tounge_text" AS mother_tongue,
-    "class_id_custom_class" AS class_id,
+    "class_id_custom_class"::text AS class_id,
     
     CASE
         WHEN "mad_joining_date_date" ~ '^\d{4}-\d{2}-\d{2}$'
@@ -46,8 +46,8 @@ SELECT
         ELSE NULL
     END AS date_of_enrollment,
 
-    "school_id_custom_partner" AS school_id,
-    "school_class_id_custom_school_class" AS school_class_id,
+    "school_id_custom_partner"::text AS school_id,
+    "school_class_id_custom_school_class"::text AS school_class_id,
     "_airbyte_raw_id" AS airbyte_raw_id,
     "_airbyte_extracted_at" AS airbyte_extracted_at,
     "_airbyte_meta" AS airbyte_meta

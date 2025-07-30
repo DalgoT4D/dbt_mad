@@ -1,7 +1,7 @@
 {{ config(materialized='table') }}
 
 SELECT
-    "_id" AS id,
+    "_id"::text AS id,
     "Created_By" AS created_by,
     
     CASE
@@ -20,9 +20,9 @@ SELECT
     "is_active_boolean" AS is_active,
     "section_name_text" AS section_name,
     "academic_year_text" AS academic_year,
-    "class_section_id_number" AS class_section_id,
-    "school_id_custom_partner" AS school_id,
-    "school_class_id1_custom_school_class" AS school_class_id,
+    "class_section_id_number"::text AS class_section_id,
+    "school_id_custom_partner"::text AS school_id,
+    "school_class_id1_custom_school_class"::text AS school_class_id,
     "_airbyte_raw_id" AS airbyte_raw_id,
     "_airbyte_extracted_at" AS airbyte_extracted_at,
     "_airbyte_meta" AS airbyte_meta

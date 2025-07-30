@@ -13,7 +13,7 @@ renamed as (
     "Email"::text as email,
     "State"::text as state,
     "Center"::text as center,
-    "UserId"::numeric as user_id,
+    "UserId"::text as user_id,
     "AddedBy"::text as added_by,
     "Contact"::text as contact,
     "UserRole"::text as user_role,

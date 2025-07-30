@@ -17,9 +17,9 @@ SELECT
     END AS modified_date,
 
     "removed_boolean" AS is_removed,
-    "class_id_custom_class" AS class_id,
-    "school_class_id_number" AS school_class_id,
-    "school_id_custom_partner" AS school_id,
+    "class_id_custom_class"::text AS class_id,
+    "school_class_id_number"::text AS school_class_id,
+    "school_id_custom_partner"::text AS school_id,
     "_airbyte_raw_id" AS airbyte_raw_id,
     "_airbyte_extracted_at" AS airbyte_extracted_at,
     "_airbyte_meta" AS airbyte_meta

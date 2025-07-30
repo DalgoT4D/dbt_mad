@@ -16,9 +16,9 @@ SELECT
         ELSE NULL
     END AS modified_date,
 
-    "class_id_number" AS class_id,
+    "class_id_number"::text AS class_id,
     "class_name_text" AS class_name,
-    "program_id_number" AS program_id,
+    "program_id_number"::text AS program_id,
     "_airbyte_raw_id" AS airbyte_raw_id,
     "_airbyte_extracted_at" AS airbyte_extracted_at,
     "_airbyte_meta" AS airbyte_meta

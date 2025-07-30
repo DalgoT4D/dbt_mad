@@ -17,9 +17,9 @@ SELECT
     END AS modified_date,
 
     "removed_boolean" AS is_removed,
-    "subject_id_number" AS subject_id,
+    "subject_id_number"::text AS subject_id,
     "subject_name_text" AS subject_name,
-    "program_id_custom_program" AS program_id,
+    "program_id_custom_program"::text AS program_id,
     "_airbyte_raw_id" AS airbyte_raw_id,
     "_airbyte_extracted_at" AS airbyte_extracted_at,
     "_airbyte_meta" AS airbyte_meta

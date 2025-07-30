@@ -17,10 +17,10 @@ SELECT
     END AS modified_date,
 
     "removed_boolean" AS is_removed,
-    "volunteer_id_user" AS volunteer_id,
+    "volunteer_id_user"::text AS volunteer_id,
     "academic_year_text" AS academic_year,
-    "slot_class_section_volunteer_id_number" AS slot_class_section_volunteer_id,
-    "slot_class_section_id_custom_volunteer_class_section" AS slot_class_section_id,
+    "slot_class_section_volunteer_id_number"::text AS slot_class_section_volunteer_id,
+    "slot_class_section_id_custom_volunteer_class_section"::text AS slot_class_section_id,
     "_airbyte_raw_id" AS airbyte_raw_id,
     "_airbyte_extracted_at" AS airbyte_extracted_at,
     "_airbyte_meta" AS airbyte_meta

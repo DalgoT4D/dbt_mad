@@ -18,9 +18,9 @@ SELECT
 
     "removed_boolean" AS is_removed,
     "academic_year_text" AS academic_year,
-    "subject_id_custom_subject" AS subject_id,
-    "class_section_subject_id_number" AS class_section_subject_id,
-    "class_section_id_custom_class_section" AS class_section_id,
+    "subject_id_custom_subject"::text AS subject_id,
+    "class_section_subject_id_number"::text AS class_section_subject_id,
+    "class_section_id_custom_class_section"::text AS class_section_id,
     "_airbyte_raw_id" AS airbyte_raw_id,
     "_airbyte_extracted_at" AS airbyte_extracted_at,
     "_airbyte_meta" AS airbyte_meta

@@ -22,7 +22,7 @@ SELECT
         ELSE NULL
     END AS end_time,
 
-    "slot_id_number" AS slot_id,
+    "slot_id_number"::text AS slot_id,
     "slot_name_text" AS slot_name,
     "removed_boolean" AS is_removed,
     
@@ -35,7 +35,7 @@ SELECT
     "day_of_week_text" AS day_of_week,
     "reccuring_boolean" AS is_recurring,
     "academic_year_text" AS academic_year,
-    "school_id_custom_partner" AS school_id,
+    "school_id_custom_partner"::text AS school_id,
     "_airbyte_raw_id" AS airbyte_raw_id,
     "_airbyte_extracted_at" AS airbyte_extracted_at,
     "_airbyte_meta" AS airbyte_meta
