@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: source_platform_commons 
-    schema: staging
+    schema: pc_staging
     tables:
       - name: user_data_int
         identifier: User_DATA_v2
@@ -46,5 +46,39 @@ sources:
       - name: volunteer_retention_d_int
         identifier: Volunteer_Retention_Data
         description: Platform common api
+
+  - name: crm_data
+    schema: crm_staging
+    tables:
+      - name: pocs
+        identifier: pocs
+        description: CRM points of contact data
+      - name: mous
+        identifier: mous
+        description: CRM Memorandum of Understanding data
+      - name: cities
+        identifier: cities
+        description: CRM cities master data
+      - name: states
+        identifier: states
+        description: CRM states master data
+      - name: partner_agreements
+        identifier: partner_agreements
+        description: CRM partner agreements and contracts
+      - name: poc_partners
+        identifier: poc_partners
+        description: CRM point of contact and partner relationships
+      - name: manager_co
+        identifier: manager_co
+        description: CRM manager and company relationships
+      - name: partners
+        identifier: partners
+        description: CRM partners master data
+      - name: partner_cos
+        identifier: partner_cos
+        description: CRM partner company relationships
+      - name: meetings
+        identifier: meetings
+        description: CRM meetings and interactions data
 
     
