@@ -2,4 +2,4 @@
 
 SELECT
    * 
-FROM {{ ref('credit_data_int') }}
+FROM {{ ref('user_data_int') }} 
