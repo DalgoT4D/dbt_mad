@@ -75,17 +75,39 @@ final_agreements AS (
   SELECT * FROM latest_agreements WHERE rn = 1
 ),
 
+mou_data AS (
+  -- Get MOU data for confirmed child counts
+  SELECT 
+    partner_id,
+    confirmed_child_count,
+    mou_status,
+    mou_sign_date,
+    ROW_NUMBER() OVER (
+      PARTITION BY partner_id 
+      ORDER BY updated_at DESC
+    ) as mou_rn
+  FROM {{ ref('mous_int') }}
+),
+
+latest_mou AS (
+  SELECT * FROM mou_data WHERE mou_rn = 1
+),
+
 co_partner_agreements AS (
-  -- Combine CO data with latest agreements
+  -- Combine CO data with latest agreements and MOU data
   SELECT 
     pd.*,
     fa.current_status AS agreement_status,
     fa.conversion_stage,
-    fa.potential_child_count,
-    fa.updated_at AS agreement_last_updated
+    fa.updated_at AS agreement_last_updated,
+    lm.confirmed_child_count,
+    lm.mou_status,
+    lm.mou_sign_date
   FROM partner_details pd
   LEFT JOIN final_agreements fa 
     ON pd.partner_id = fa.partner_id
+  LEFT JOIN latest_mou lm
+    ON pd.partner_id = lm.partner_id
 ),
 
 -- Get all unique conversion stages for pivoting
@@ -112,7 +134,7 @@ co_aggregated AS (
     
     -- Child count metrics
     SUM(COALESCE(partner_child_count, 0)) AS total_partner_children,
-    SUM(COALESCE(potential_child_count, 0)) AS total_potential_children,
+    SUM(COALESCE(confirmed_child_count, 0)) AS total_confirmed_children,
     
     -- Agreement status counts
     COUNT(DISTINCT CASE WHEN agreement_status IS NOT NULL THEN partner_id END) AS partners_with_agreements,
@@ -139,7 +161,7 @@ co_aggregated AS (
     CASE 
       WHEN child_count_target > 0 THEN 
         ROUND(
-          (SUM(COALESCE(potential_child_count, 0))::NUMERIC / child_count_target::NUMERIC) * 100, 
+          (SUM(COALESCE(confirmed_child_count, 0))::NUMERIC / child_count_target::NUMERIC) * 100, 
           2
         )
       ELSE 0 
@@ -167,7 +189,7 @@ SELECT
   total_partners_assigned,
   active_partner_count,
   total_partner_children,
-  total_potential_children,
+  total_confirmed_children,
   partners_with_agreements,
   
   -- Conversion stage distribution
