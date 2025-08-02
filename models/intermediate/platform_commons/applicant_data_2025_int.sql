@@ -1,6 +1,6 @@
 {{ config(materialized='table') }}
 
-SELECT
+with cte as (SELECT
     "City" AS city,
     "State" AS state,
     "Gender" AS gender,
@@ -31,7 +31,7 @@ SELECT
     "PrimaryEmailAddress" AS primary_email_address,
     "SourcedByUserId" AS sourced_by_user_id,
     "Referrer" AS referrer,
-    "ReferrerLogin" As referrer_login,
+    "ReferrerLogin" AS referrer_login,
     "CurrentlyDoing" AS currently_doing,
 
     CASE
@@ -58,6 +58,23 @@ SELECT
     "SelectedForParentWorkNode" AS selected_for_parent_work_node,
     "CodeOfConductPolicyAccepted" AS code_of_conduct_policy_accepted,
     "ChildProtectionPolicyAccepted" AS child_protection_policy_accepted,
-    "SelectedForParentWorkNodeType" AS selected_for_parent_work_node_type
+    "SelectedForParentWorkNodeType" AS selected_for_parent_work_node_type,
+    
+    -- Adding missing columns
+    "RoleAssigned" AS role_assigned,
+    "DateOfJoining" AS date_of_joining,
+    "WorknodeStatus" AS worknode_status,
+    "AppliedToWorknodeName" AS applied_to_worknode_name,
+    "AppliedToWorknodeType" AS applied_to_worknode_type,
+    "_airbyte_raw_id" AS _airbyte_raw_id,
+    "_airbyte_extracted_at" AS _airbyte_extracted_at,
+    "_airbyte_meta" AS _airbyte_meta
 
-FROM {{ source('source_platform_commons', 'applicant_data_2025_int') }}
+FROM {{ source('source_platform_commons', 'applicant_data_2025_int') }})
+
+{{ dbt_utils.deduplicate(
+      relation='cte',
+      partition_by='application_id',
+      order_by='"user_updated_date_time" desc',
+     )
+  }}

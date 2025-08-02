@@ -1,6 +1,6 @@
 {{ config(materialized='table') }}
 
-SELECT
+with cte as (SELECT
     "CCI" AS cci,
     "Class" AS class,
     "Course" AS course,
@@ -21,4 +21,11 @@ SELECT
         ELSE NULL
     END AS user_updated_date_time
 
-FROM {{ source('source_platform_commons', 'students_data_int') }}
+FROM {{ source('source_platform_commons', 'students_data_int') }})
+
+{{ dbt_utils.deduplicate(
+      relation='cte',
+      partition_by='student_id',
+      order_by='"user_updated_date_time" desc',
+     )
+  }}

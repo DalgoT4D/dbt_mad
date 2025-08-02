@@ -1,6 +1,6 @@
 {{ config(materialized='table') }}
 
-SELECT
+with cte as (SELECT
     "Class" AS class,
     "Course" AS course,
     "Gender" AS gender,
@@ -53,4 +53,11 @@ SELECT
     "Did_the_student_understand_the_concept_s__taught_in_class_today" AS did_understand_concepts,
     "Is_there_anything_else_to_note_about_the_child_s_performance_or" AS additional_notes
 
-FROM {{ source('source_platform_commons', 'child_attendance_int') }}
+FROM {{ source('source_platform_commons', 'child_attendance_int') }})
+
+{{ dbt_utils.deduplicate(
+      relation='cte',
+      partition_by='child_id',
+      order_by='"user_updated_date_time" desc',
+     )
+  }}

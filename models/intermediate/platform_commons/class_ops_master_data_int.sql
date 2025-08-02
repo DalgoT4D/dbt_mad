@@ -1,6 +1,6 @@
 {{ config(materialized='table') }}
 
-SELECT
+with cte as (SELECT
     "City" AS city,
     "Center" AS center,
     "Course" AS course,
@@ -47,4 +47,11 @@ SELECT
         ELSE NULL
     END AS batch_inactive_start_date
 
-FROM {{ source('source_platform_commons', 'class_ops_master_data_int') }}
+FROM {{ source('source_platform_commons', 'class_ops_master_data_int') }})
+
+{{ dbt_utils.deduplicate(
+      relation='cte',
+      partition_by='class_id',
+      order_by='"user_updated_date_time" desc',
+     )
+  }}
