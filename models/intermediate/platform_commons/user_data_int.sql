@@ -1,5 +1,6 @@
 {{ config(
-  materialized='table'
+  materialized='table',
+  tags=["user_data"]
 ) }}
 
 
@@ -13,7 +14,7 @@ renamed as (
     "Email"::text as email,
     "State"::text as state,
     "Center"::text as center,
-    "UserId"::numeric as user_id,
+    "UserId"::text as user_id,
     "AddedBy"::text as added_by,
     "Contact"::text as contact,
     "UserRole"::text as user_role,
@@ -41,4 +42,11 @@ renamed as (
   from source
 )
 
-select * from renamed
+ 
+  {{ dbt_utils.deduplicate(
+      relation='renamed',
+      partition_by='user_id',
+      order_by='"user_updated_datetime" desc',
+     )
+  }}
+

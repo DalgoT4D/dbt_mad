@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: source_platform_commons 
-    schema: staging
+    schema: pc_staging
     tables:
       - name: user_data_int
         identifier: User_DATA_v2
@@ -46,5 +46,100 @@ sources:
       - name: volunteer_retention_d_int
         identifier: Volunteer_Retention_Data
         description: Platform common api
+
+  - name: crm_data
+    schema: crm_staging
+    tables:
+      - name: pocs
+        identifier: pocs
+        description: CRM points of contact data
+      - name: mous
+        identifier: mous
+        description: CRM Memorandum of Understanding data
+      - name: cities
+        identifier: cities
+        description: CRM cities master data
+      - name: states
+        identifier: states
+        description: CRM states master data
+      - name: partner_agreements
+        identifier: partner_agreements
+        description: CRM partner agreements and contracts
+      - name: poc_partners
+        identifier: poc_partners
+        description: CRM point of contact and partner relationships
+      - name: manager_co
+        identifier: manager_co
+        description: CRM manager and company relationships
+      - name: partners
+        identifier: partners
+        description: CRM partners master data
+      - name: partner_cos
+        identifier: partner_cos
+        description: CRM partner company relationships
+      - name: meetings
+        identifier: meetings
+        description: CRM meetings and interactions data
+
+  - name: bubble_staging
+    schema: bubble_staging
+    tables:
+      - name: batch_child
+        identifier: batch_child
+        description: Bubble batch and child relationship data
+      - name: chapter
+        identifier: chapter
+        description: Bubble chapter master data
+      - name: chapter_school
+        identifier: chapter_school
+        description: Bubble chapter and school relationship data
+      - name: child
+        identifier: child
+        description: Bubble child master data
+      - name: child_class
+        identifier: child_class
+        description: Bubble child and class relationship data
+      - name: child_class_section
+        identifier: child_class_section
+        description: Bubble child and class section relationship data
+      - name: child_program
+        identifier: child_program
+        description: Bubble child and program relationship data
+      - name: child_subject
+        identifier: child_subject
+        description: Bubble child and subject relationship data
+      - name: class
+        identifier: class
+        description: Bubble class master data
+      - name: class_section
+        identifier: class_section
+        description: Bubble class section data
+      - name: class_section_subject
+        identifier: class_section_subject
+        description: Bubble class section and subject relationship data
+      - name: co_chapter
+        identifier: co_chapter
+        description: Bubble co-chapter program data
+      - name: program
+        identifier: program
+        description: Bubble program master data
+      - name: school_class
+        identifier: school_class
+        description: Bubble school and class relationship data
+      - name: school_volunteer
+        identifier: school_volunteer
+        description: Bubble school and volunteer relationship data
+      - name: slot
+        identifier: slot
+        description: Bubble time slot data
+      - name: slot_class_section
+        identifier: slot_class_section
+        description: Bubble slot and class section relationship data
+      - name: slot_class_section_volunteer
+        identifier: slot_class_section_volunteer
+        description: Bubble slot, class section and volunteer relationship data
+      - name: subject
+        identifier: subject
+        description: Bubble subject master data
 
     
