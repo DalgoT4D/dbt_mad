@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+{{ config(materialized='table', tags=["user_data"]) }}
 
 SELECT
    * 

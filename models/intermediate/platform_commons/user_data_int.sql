@@ -1,5 +1,6 @@
 {{ config(
-  materialized='table'
+  materialized='table',
+  tags=["user_data"]
 ) }}
 
 
@@ -41,4 +42,11 @@ renamed as (
   from source
 )
 
-select * from renamed
+ 
+  {{ dbt_utils.deduplicate(
+      relation='renamed',
+      partition_by='user_id',
+      order_by='"user_updated_datetime" desc',
+     )
+  }}
+
