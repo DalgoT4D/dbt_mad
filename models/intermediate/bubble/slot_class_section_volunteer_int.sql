@@ -1,29 +1,27 @@
 {{ config(materialized='table') }}
 
-SELECT
-    "_id" AS id,
-    "Created_By" AS created_by,
-    
-    CASE
-        WHEN "Created_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Created_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS created_date,
-
-    CASE
-        WHEN "Modified_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Modified_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS modified_date,
-
-    "removed_boolean" AS is_removed,
-    "volunteer_id_user"::text AS volunteer_id,
-    "academic_year_text" AS academic_year,
-    "slot_class_section_volunteer_id_number"::text AS slot_class_section_volunteer_id,
-    "slot_class_section_id_custom_volunteer_class_section"::text AS slot_class_section_id,
-    "_airbyte_raw_id" AS airbyte_raw_id,
-    "_airbyte_extracted_at" AS airbyte_extracted_at,
-    "_airbyte_meta" AS airbyte_meta
-
-FROM {{ source('bubble_staging', 'slot_class_section_volunteer') }}
-WHERE "removed_boolean" IS NOT TRUE 
+with raw_slot_class_section_volunteer as (
+    select * from bubble_staging.slot_class_section_volunteer
+),
+slot_class_section_map as (
+    select _id as uuid, volunteer_class_section_id_number as slot_class_section_id
+    from bubble_staging.slot_class_section
+),
+user_map as (
+    select _id as uuid, user_id_number as volunteer_id
+    from bubble_staging.user
+)
+select
+    raw."slot_class_section_volunteer_id_number" as slot_class_section_volunteer_id,
+    slot_class_section_map.slot_class_section_id,
+    user_map.volunteer_id,
+    raw."academic_year_text" as academic_year,
+    raw."removed_boolean" as removed,
+    raw."Created_Date" as created_date,
+    raw."Modified_Date" as modified_date,
+    raw."_airbyte_raw_id",
+    raw."_airbyte_extracted_at",
+    raw."_airbyte_meta"
+from raw_slot_class_section_volunteer raw
+left join slot_class_section_map on raw."slot_class_section_id_custom_volunteer_class_section" = slot_class_section_map.uuid
+left join user_map on raw."volunteer_id_user" = user_map.uuid

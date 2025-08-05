@@ -1,56 +1,40 @@
 {{ config(materialized='table') }}
 
-SELECT
-    "_id" AS id,
-    "Created_By" AS created_by,
-    
-    CASE
-        WHEN "dob_date" ~ '^\d{4}-\d{2}-\d{2}$'
-        THEN TO_DATE("dob_date", 'YYYY-MM-DD')
-        ELSE NULL
-    END AS date_of_birth,
-
-    "city_text" AS city,
-    "age_number" AS age,
-    "gender_text" AS gender,
-    
-    CASE
-        WHEN "Created_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Created_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS created_date,
-
-    CASE
-        WHEN "Modified_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Modified_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS modified_date,
-
-    "last_name_text" AS last_name,
-    "child_id_number"::text AS child_id,
-    "first_name_text" AS first_name,
-    "removed_boolean" AS is_removed,
-    "is_active_boolean" AS is_active,
-    "mother_tounge_text" AS mother_tongue,
-    "class_id_custom_class"::text AS class_id,
-    
-    CASE
-        WHEN "mad_joining_date_date" ~ '^\d{4}-\d{2}-\d{2}$'
-        THEN TO_DATE("mad_joining_date_date", 'YYYY-MM-DD')
-        ELSE NULL
-    END AS mad_joining_date,
-    
-    CASE
-        WHEN "date_of_enrollment_date" ~ '^\d{4}-\d{2}-\d{2}$'
-        THEN TO_DATE("date_of_enrollment_date", 'YYYY-MM-DD')
-        ELSE NULL
-    END AS date_of_enrollment,
-
-    "school_id_custom_partner"::text AS school_id,
-    "school_class_id_custom_school_class"::text AS school_class_id,
-    "_airbyte_raw_id" AS airbyte_raw_id,
-    "_airbyte_extracted_at" AS airbyte_extracted_at,
-    "_airbyte_meta" AS airbyte_meta
-
-FROM {{ source('bubble_staging', 'child') }}
-WHERE "removed_boolean" IS NOT TRUE 
+with raw_child as (
+    select * from bubble_staging.child
+),
+class_map as (
+    select _id as uuid, class_id_number as class_id
+    from bubble_staging.class
+),
+school_class_map as (
+    select _id as uuid, school_class_id_number as school_class_id
+    from bubble_staging.school_class
+),
+partner_map as (
+    select _id as uuid, partner_id1_number as school_id
+    from bubble_staging.partner
+)
+select
+    raw."child_id_number" as child_id,
+    raw."first_name_text" as first_name,
+    raw."last_name_text" as last_name,
+    raw."gender_text" as gender,
+    raw."dob_date" as dob,
+    raw."city_text" as city,
+    raw."date_of_enrollment_date" as date_of_enrollment,
+    raw."mother_tounge_text" as mother_tounge,
+    raw."age_number" as age,
+    raw."removed_boolean" as removed,
+    class_map.class_id,
+    school_class_map.school_class_id,
+    partner_map.school_id,
+    raw."Created_Date" as created_date,
+    raw."Modified_Date" as modified_date,
+    raw."_airbyte_raw_id",
+    raw."_airbyte_extracted_at",
+    raw."_airbyte_meta"
+from raw_child raw
+left join class_map on raw."class_id_custom_class" = class_map.uuid
+left join school_class_map on raw."school_class_id_custom_school_class" = school_class_map.uuid
+left join partner_map on raw."school_id_custom_partner" = partner_map.uuid
