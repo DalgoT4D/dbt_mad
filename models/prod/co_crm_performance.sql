@@ -1,4 +1,4 @@
-{{ config(materialized='view') }}
+{{ config(materialized='table') }}
 
 -- CO CRM Performance: Aggregated metrics per Community Organizer
 -- Shows targets, partner assignments, and conversion stage distribution

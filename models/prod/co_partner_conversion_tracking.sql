@@ -1,4 +1,4 @@
-{{ config(materialized='view') }}
+{{ config(materialized='table') }}
 
 -- CO CRM Performance: Individual records per Community Organizer and Partner
 -- Shows targets, partner assignments, MOU data, and conversion stages
