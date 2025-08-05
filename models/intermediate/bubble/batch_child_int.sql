@@ -1,29 +1,27 @@
 {{ config(materialized='table') }}
 
-SELECT
-    "_id" AS id,
-    "Created_By" AS created_by,
-    
-    CASE
-        WHEN "Created_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Created_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS created_date,
-
-    CASE
-        WHEN "Modified_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Modified_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS modified_date,
-
-    "removed_boolean" AS is_removed,
-    "academic_year_text" AS academic_year,
-    "batch_child_id_number" AS batch_child_id,
-    "child_id_custom_child" AS child_id,
-    "school_id_custom_partner" AS school_id,
-    "_airbyte_raw_id" AS airbyte_raw_id,
-    "_airbyte_extracted_at" AS airbyte_extracted_at,
-    "_airbyte_meta" AS airbyte_meta
-
-FROM {{ source('bubble_staging', 'batch_child') }}
-WHERE "removed_boolean" IS NOT TRUE 
+with raw_batch_child as (
+    select * from bubble_staging.batch_child
+),
+child_map as (
+    select _id as uuid, child_id_number as child_id
+    from bubble_staging.child
+),
+partner_map as (
+    select _id as uuid, partner_id1_number as school_id
+    from bubble_staging.partner
+)
+select
+    raw."batch_child_id_number" as batch_child_id,
+    raw."academic_year_text" as academic_year,
+    child_map.child_id,
+    partner_map.school_id,
+    raw."removed_boolean",
+    raw."Created_Date" as created_date,
+    raw."Modified_Date" as modified_date,
+    raw."_airbyte_raw_id",
+    raw."_airbyte_extracted_at",
+    raw."_airbyte_meta"
+from raw_batch_child raw
+left join child_map on raw."child_id_custom_child" = child_map.uuid
+left join partner_map on raw."school_id_custom_partner" = partner_map.uuid

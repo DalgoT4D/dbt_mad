@@ -1,26 +1,15 @@
 {{ config(materialized='table') }}
 
-SELECT
-    "_id" AS id,
-    "Created_By" AS created_by,
-    
-    CASE
-        WHEN "Created_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Created_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS created_date,
-
-    CASE
-        WHEN "Modified_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Modified_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS modified_date,
-
-    "class_id_number"::text AS class_id,
-    "class_name_text" AS class_name,
-    "program_id_number"::text AS program_id,
-    "_airbyte_raw_id" AS airbyte_raw_id,
-    "_airbyte_extracted_at" AS airbyte_extracted_at,
-    "_airbyte_meta" AS airbyte_meta
-
-FROM {{ source('bubble_staging', 'class') }} 
+with raw_class as (
+    select * from bubble_staging.class
+)
+select
+    raw."class_id_number" as class_id,
+    raw."class_name_text" as class_name,
+    raw."program_id_number" as program_id,
+    raw."Created_Date" as created_date,
+    raw."Modified_Date" as modified_date,
+    raw."_airbyte_raw_id",
+    raw."_airbyte_extracted_at",
+    raw."_airbyte_meta"
+from raw_class raw

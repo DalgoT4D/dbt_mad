@@ -1,43 +1,29 @@
 {{ config(materialized='table') }}
 
-SELECT
-    "_id" AS id,
-    "Created_By" AS created_by,
-    "co_id_user" AS co_id,
-    
-    CASE
-        WHEN "Created_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Created_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS created_date,
-
-    CASE
-        WHEN "Modified_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Modified_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS modified_date,
-
-    CASE
-        WHEN "end_date_date" ~ '^\d{4}-\d{2}-\d{2}$'
-        THEN TO_DATE("end_date_date", 'YYYY-MM-DD')
-        ELSE NULL
-    END AS end_date,
-
-    "removed_boolean" AS is_removed,
-
-    CASE
-        WHEN "start_date_date" ~ '^\d{4}-\d{2}-\d{2}$'
-        THEN TO_DATE("start_date_date", 'YYYY-MM-DD')
-        ELSE NULL
-    END AS start_date,
-
-    "is_active_boolean" AS is_active,
-    "academic_year_text" AS academic_year,
-    "co_chapter_id_number" AS co_chapter_id,
-    "chapter_id_custom_chapter" AS chapter_id,
-    "_airbyte_raw_id" AS airbyte_raw_id,
-    "_airbyte_extracted_at" AS airbyte_extracted_at,
-    "_airbyte_meta" AS airbyte_meta
-
-FROM {{ source('bubble_staging', 'co_chapter') }}
-WHERE "removed_boolean" IS NOT TRUE 
+with raw_co_chapter as (
+    select * from bubble_staging.co_chapter
+),
+chapter_map as (
+    select _id as uuid, chapter_id_number as chapter_id
+    from bubble_staging.chapter
+),
+user_map as (
+    select _id as uuid, user_id_number as co_id
+    from bubble_staging.user
+)
+select
+    raw."co_chapter_id_number" as co_chapter_id,
+    chapter_map.chapter_id,
+    raw."academic_year_text" as academic_year,
+    user_map.co_id,
+    raw."start_date_date" as start_date,
+    raw."end_date_date" as end_date,
+    raw."is_active_boolean" as is_active,
+    raw."Created_Date" as created_date,
+    raw."Modified_Date" as modified_date,
+    raw."_airbyte_raw_id",
+    raw."_airbyte_extracted_at",
+    raw."_airbyte_meta"
+from raw_co_chapter raw
+left join chapter_map on raw."chapter_id_custom_chapter" = chapter_map.uuid
+left join user_map on raw."co_id_user" = user_map.uuid

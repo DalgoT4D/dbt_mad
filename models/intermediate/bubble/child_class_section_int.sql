@@ -1,29 +1,27 @@
 {{ config(materialized='table') }}
 
-SELECT
-    "_id" AS id,
-    "Created_By" AS created_by,
-    
-    CASE
-        WHEN "Created_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Created_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS created_date,
-
-    CASE
-        WHEN "Modified_Date" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
-        THEN TO_TIMESTAMP("Modified_Date", 'YYYY-MM-DD"T"HH24:MI:SS')
-        ELSE NULL
-    END AS modified_date,
-
-    "removed_boolean" AS is_removed,
-    "academic_year_text" AS academic_year,
-    "child_id_custom_child"::text AS child_id,
-    "child_class_section_id_number"::text AS child_class_section_id,
-    "class_section_id_custom_class_section"::text AS class_section_id,
-    "_airbyte_raw_id" AS airbyte_raw_id,
-    "_airbyte_extracted_at" AS airbyte_extracted_at,
-    "_airbyte_meta" AS airbyte_meta
-
-FROM {{ source('bubble_staging', 'child_class_section') }}
-WHERE "removed_boolean" IS NOT TRUE 
+with raw_child_class_section as (
+    select * from bubble_staging.child_class_section
+),
+child_map as (
+    select _id as uuid, child_id_number as child_id
+    from bubble_staging.child
+),
+class_section_map as (
+    select _id as uuid, class_section_id_number as class_section_id
+    from bubble_staging.class_section
+)
+select
+    raw."child_class_section_id_number" as child_class_section_id,
+    raw."academic_year_text" as academic_year,
+    child_map.child_id,
+    class_section_map.class_section_id,
+    raw."removed_boolean",
+    raw."Created_Date" as created_date,
+    raw."Modified_Date" as modified_date,
+    raw."_airbyte_raw_id",
+    raw."_airbyte_extracted_at",
+    raw."_airbyte_meta"
+from raw_child_class_section raw
+left join child_map on raw."child_id_custom_child" = child_map.uuid
+left join class_section_map on raw."class_section_id_custom_class_section" = class_section_map.uuid
