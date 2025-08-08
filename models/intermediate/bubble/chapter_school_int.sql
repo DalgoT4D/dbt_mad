@@ -1,19 +1,19 @@
 {{ config(materialized='table') }}
 
 with raw_chapter_school as (
-    select * from bubble_staging.chapter_school
+    select * from {{ source('bubble_staging', 'chapter_school') }}
 ),
 chapter_map as (
     select _id as uuid, chapter_id_number as chapter_id
-    from bubble_staging.chapter
+    from {{ source('bubble_staging', 'chapter') }}
 ),
 user_map as (
     select _id as uuid, user_id_number as co_id
-    from bubble_staging.user
+    from {{ source('bubble_staging', 'user') }}
 ),
 partner_map as (
     select _id as uuid, partner_id1_number as school_id
-    from bubble_staging.partner
+    from {{ source('bubble_staging', 'partner') }}
 )
 select
     raw."chapter_school_id_number" as chapter_school_id,

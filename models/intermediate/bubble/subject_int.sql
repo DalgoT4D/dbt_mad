@@ -1,11 +1,11 @@
 {{ config(materialized='table') }}
 
 with raw_subject as (
-    select * from bubble_staging.subject
+    select * from {{ source('bubble_staging', 'subject') }}
 ),
 program_map as (
     select _id as uuid, program_id_number as program_id
-    from bubble_staging.program
+    from {{ source('bubble_staging', 'program') }}
 )
 select
     raw."subject_id_number" as subject_id,

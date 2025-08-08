@@ -1,15 +1,15 @@
 {{ config(materialized='table') }}
 
 with raw_child_class as (
-    select * from bubble_staging.child_class
+    select * from {{ source('bubble_staging', 'child_class') }}
 ),
 child_map as (
     select _id as uuid, child_id_number as child_id
-    from bubble_staging.child
+    from {{ source('bubble_staging', 'child') }}
 ),
 school_class_map as (
     select _id as uuid, school_class_id_number as school_class_id
-    from bubble_staging.school_class
+    from {{ source('bubble_staging', 'school_class') }}
 )
 select
     raw."child_class_id_number" as child_class_id,

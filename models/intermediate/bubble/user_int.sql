@@ -1,7 +1,7 @@
 {{ config(materialized='table') }}
 
 with raw_user as (
-    select * from bubble_staging.user
+    select * from {{ source('bubble_staging', 'user') }}
 )
 select
     raw."_id" as user_id,

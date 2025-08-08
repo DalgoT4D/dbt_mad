@@ -1,15 +1,15 @@
 {{ config(materialized='table') }}
 
 with raw_child_program as (
-    select * from bubble_staging.child_program
+    select * from {{ source('bubble_staging', 'child_program') }}
 ),
 child_map as (
     select _id as uuid, child_id_number as child_id
-    from bubble_staging.child
+    from {{ source('bubble_staging', 'child') }}
 ),
 program_map as (
     select _id as uuid, program_id_number as program_id
-    from bubble_staging.program
+    from {{ source('bubble_staging', 'program') }}
 )
 select
     raw."child_program_id_number" as child_program_id,

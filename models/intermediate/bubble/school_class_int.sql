@@ -1,15 +1,15 @@
 {{ config(materialized='table') }}
 
 with raw_school_class as (
-    select * from bubble_staging.school_class
+    select * from {{ source('bubble_staging', 'school_class') }}
 ),
 class_map as (
     select _id as uuid, class_id_number as class_id
-    from bubble_staging.class
+    from {{ source('bubble_staging', 'class') }}
 ),
 partner_map as (
     select _id as uuid, partner_id1_number as school_id
-    from bubble_staging.partner
+    from {{ source('bubble_staging', 'partner') }}
 )
 select
     raw."school_class_id_number" as school_class_id,

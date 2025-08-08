@@ -1,15 +1,15 @@
 {{ config(materialized='table') }}
 
 with raw_child_subject as (
-    select * from bubble_staging.child_subject
+    select * from {{ source('bubble_staging', 'child_subject') }}
 ),
 child_map as (
     select _id as uuid, child_id_number as child_id
-    from bubble_staging.child
+    from {{ source('bubble_staging', 'child') }}
 ),
 class_section_subject_map as (
     select _id as uuid, class_section_subject_id_number as class_section_subject_id
-    from bubble_staging.class_section_subject
+    from {{ source('bubble_staging', 'class_section_subject') }}
 )
 select
     raw."child_subject_id_number" as child_subject_id,

@@ -1,15 +1,15 @@
 {{ config(materialized='table') }}
 
 with raw_co_chapter as (
-    select * from bubble_staging.co_chapter
+    select * from {{ source('bubble_staging', 'co_chapter') }}
 ),
 chapter_map as (
     select _id as uuid, chapter_id_number as chapter_id
-    from bubble_staging.chapter
+    from {{ source('bubble_staging', 'chapter') }}
 ),
 user_map as (
     select _id as uuid, user_id_number as co_id
-    from bubble_staging.user
+    from {{ source('bubble_staging', 'user') }}
 )
 select
     raw."co_chapter_id_number" as co_chapter_id,

@@ -1,7 +1,7 @@
 {{ config(materialized='table') }}
 
 with raw_partner as (
-    select * from bubble_staging.partner
+    select * from {{ source('bubble_staging', 'partner') }}
 )
 select
     raw."_id" as partner_id,
