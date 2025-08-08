@@ -1,7 +1,7 @@
 {{ config(materialized='table') }}
 
 with raw_class as (
-    select * from bubble_staging.class
+    select * from {{ source('bubble_staging', 'class') }}
 )
 select
     raw."class_id_number" as class_id,

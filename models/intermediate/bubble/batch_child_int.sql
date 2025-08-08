@@ -1,15 +1,15 @@
 {{ config(materialized='table') }}
 
 with raw_batch_child as (
-    select * from bubble_staging.batch_child
+    select * from {{ source('bubble_staging', 'batch_child') }}
 ),
 child_map as (
     select _id as uuid, child_id_number as child_id
-    from bubble_staging.child
+    from {{ source('bubble_staging', 'child') }}
 ),
 partner_map as (
     select _id as uuid, partner_id1_number as school_id
-    from bubble_staging.partner
+    from {{ source('bubble_staging', 'partner') }}
 )
 select
     raw."batch_child_id_number" as batch_child_id,

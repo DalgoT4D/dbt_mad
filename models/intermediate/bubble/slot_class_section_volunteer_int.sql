@@ -1,15 +1,15 @@
 {{ config(materialized='table') }}
 
 with raw_slot_class_section_volunteer as (
-    select * from bubble_staging.slot_class_section_volunteer
+    select * from {{ source('bubble_staging', 'slot_class_section_volunteer') }}
 ),
 slot_class_section_map as (
     select _id as uuid, volunteer_class_section_id_number as slot_class_section_id
-    from bubble_staging.slot_class_section
+    from {{ source('bubble_staging', 'slot_class_section') }}
 ),
 user_map as (
     select _id as uuid, user_id_number as volunteer_id
-    from bubble_staging.user
+    from {{ source('bubble_staging', 'user') }}
 )
 select
     raw."slot_class_section_volunteer_id_number" as slot_class_section_volunteer_id,

@@ -1,11 +1,11 @@
 {{ config(materialized='table') }}
 
 with raw_chapter as (
-    select * from bubble_staging.chapter
+    select * from {{ source('bubble_staging', 'chapter') }}
 ),
 partner_map as (
     select _id as uuid, partner_id1_number as school_id
-    from bubble_staging.partner
+    from {{ source('bubble_staging', 'partner') }}
 )
 select
     raw."chapter_id_number" as chapter_id,

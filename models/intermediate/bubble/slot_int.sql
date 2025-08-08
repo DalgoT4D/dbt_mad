@@ -1,11 +1,11 @@
 {{ config(materialized='table') }}
 
 with raw_slot as (
-    select * from bubble_staging.slot
+    select * from {{ source('bubble_staging', 'slot') }}
 ),
 partner_map as (
     select _id as uuid, partner_id1_number as school_id
-    from bubble_staging.partner
+    from {{ source('bubble_staging', 'partner') }}
 )
 select
     raw."slot_id_number" as slot_id,

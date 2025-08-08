@@ -1,7 +1,7 @@
 {{ config(materialized='table') }}
 
 with raw_program as (
-    select * from bubble_staging.program
+    select * from {{ source('bubble_staging', 'program') }}
 )
 select
     raw."program_id_number" as program_id,
