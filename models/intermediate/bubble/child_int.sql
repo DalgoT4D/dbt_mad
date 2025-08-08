@@ -25,6 +25,7 @@ select
     raw."date_of_enrollment_date" as date_of_enrollment,
     raw."mother_tounge_text" as mother_tounge,
     raw."age_number" as age,
+    raw."is_active_boolean" as is_active,
     raw."removed_boolean" as removed,
     class_map.class_id,
     school_class_map.school_class_id,
