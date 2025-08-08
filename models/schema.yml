@@ -84,6 +84,12 @@ sources:
   - name: bubble_staging
     schema: bubble_staging
     tables:
+      - name: partner
+        identifier: partner
+        description: Bubble partner master data 
+      - name: user
+        identifier: user
+        description: Bubble user master data
       - name: batch_child
         identifier: batch_child
         description: Bubble batch and child relationship data
