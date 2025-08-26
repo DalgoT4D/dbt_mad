@@ -35,12 +35,12 @@ SELECT
     ud.user_display_name,
     ud.contact,
     ud.email,
-    s.day_of_week
-    -- ch.child_id,
-    -- ch.first_name AS child_first_name,
-    -- ch.last_name AS child_last_name,
-    -- c.class_name,
-    -- sub.subject_name
+    s.day_of_week,
+    ch.child_id,
+    ch.first_name AS child_first_name,
+    ch.last_name AS child_last_name,
+    c.class_name,
+    sub.subject_name
 FROM {{ ref('slot_class_section_volunteer_int') }} scsv
 JOIN {{ ref('slot_class_section_int') }} scs 
   ON scsv.slot_class_section_id = scs.slot_class_section_id
