@@ -35,6 +35,7 @@ SELECT
     ud.user_display_name,
     ud.contact,
     ud.email,
+    ud.user_login, 
     s.day_of_week
     -- ch.child_id,
     -- ch.first_name AS child_first_name,
