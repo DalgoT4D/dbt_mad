@@ -37,6 +37,7 @@ SELECT
     ud.email,
     ud.user_login, 
     s.day_of_week,
+    s.slot_name,
     ch.child_id,
     ch.first_name AS child_first_name,
     ch.last_name AS child_last_name,
