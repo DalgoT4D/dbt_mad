@@ -202,4 +202,61 @@ sources:
         description: Bubble subject master data
         loaded_at_field: _airbyte_extracted_at
 
+models:
+  - name: school_data_comparison
+    description: Comprehensive view of all schools with CO details and child count metrics. Includes schools from CRM (with converted agreements) and schools only in Bubble system.
+    columns:
+      - name: "Partner ID"
+        description: Unique identifier for the partner (CRM ID for CRM schools, Bubble ID for Bubble-only schools)
+        tests:
+          - not_null
+      - name: "Partner Name"
+        description: Name of the partner organization
+        tests:
+          - not_null
+      - name: "CO ID"
+        description: User ID of the Community Organizer who created the partner
+        tests:
+          - not_null
+      - name: "CO Name"
+        description: Display name of the Community Organizer
+      - name: "MOU Sign Date"
+        description: Date when the MOU was signed
+      - name: "Weeks Since MOU Signed"
+        description: Number of weeks elapsed since the MOU was signed (calculated as floor of days difference divided by 7)
+      - name: "Confirmed Child Count (CRM)"
+        description: Number of children confirmed in CRM (from partner agreements)
+      - name: "Active Child Count (Bubble)"
+        description: Number of active children in Bubble system
+      - name: "Dropped Child Count (Bubble)"
+        description: Number of dropped/inactive children in Bubble system
+      - name: "Platform Presence"
+        description: Platform presence of the school - 'BOTH' for schools in both CRM and Bubble, 'CRM' for schools only in CRM, 'BUBBLE' for schools only in Bubble
+      - name: "CRM Status"
+        description: Numeric indicator for CRM presence - 100 for schools in CRM (CRM or BOTH), 0 for Bubble-only schools
+      - name: "Child Count Ratio (Bubble / CRM)"
+        description: Percentage ratio of active children in Bubble divided by confirmed children in CRM, multiplied by 100. Values > 100 indicate Bubble has more children, < 100 indicate fewer, = 100 indicates perfect match. NULL for schools without CRM data.
+
+  - name: volunteer_recruitment_data
+    description: Volunteer recruitment data with partner details, CO information, child counts, and volunteer metrics including recruitment targets and assignments
+    columns:
+      - name: partner_id
+        description: Unique identifier for the partner organization (NULL for unassigned volunteers)
+      - name: partner_name
+        description: Name of the partner organization ('Unassigned' for volunteers not yet assigned to any school)
+        tests:
+          - not_null
+      - name: co_id
+        description: User ID of the Community Organizer who created the partner
+      - name: co_name
+        description: Display name of the Community Organizer
+      - name: active_child_count
+        description: Number of active children enrolled at this partner/school from Bubble system
+      - name: volunteers_required
+        description: Calculated number of volunteers required (4/5 times the active child count)
+      - name: volunteers_assigned_to_school
+        description: Number of volunteers assigned to this specific school (for unassigned rows, shows count of unassigned volunteers)
+      - name: volunteers_assigned_to_class
+        description: Number of volunteers assigned to classes at this school (through slot assignments)
+
     
