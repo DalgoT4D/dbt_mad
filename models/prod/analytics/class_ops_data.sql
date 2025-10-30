@@ -46,24 +46,15 @@ latest_agreements AS (
     WHERE rn = 1
 ),
 
--- MOU details for each partner with confirmed child count (deduplicated)
+-- Children in Bubble from Bubble active children (child_int)
 mou_details AS (
     SELECT 
-        partner_id,
-        confirmed_child_count
-    FROM (
-        SELECT 
-            id,
-            partner_id,
-            confirmed_child_count,
-            created_at,
-            ROW_NUMBER() OVER (
-                PARTITION BY partner_id 
-                ORDER BY created_at DESC, id DESC
-            ) as rn
-        FROM {{ ref('mous_int') }}
-    ) ranked
-    WHERE rn = 1
+        school_id,
+        COUNT(*) AS active_child_count
+    FROM {{ ref('child_int') }}
+    WHERE removed = false 
+      AND is_active = true
+    GROUP BY school_id
 ),
 
 -- Community Organizer (CO) details (deduplicated)
@@ -214,8 +205,8 @@ SELECT
     cd.co_id AS "CO ID",
     cd.co_name AS "CO Name",
     
-    -- Children in Bubble (Confirmed Child Count from CRM)
-    COALESCE(md.confirmed_child_count, 0) AS "Children in Bubble",
+    -- Children in Bubble (Active children from Bubble)
+    COALESCE(md.active_child_count, 0) AS "Children in Bubble",
     
     -- Volunteers Recruited
     COALESCE(vc.volunteer_count, 0) AS "Volunteers Recruited",
@@ -230,7 +221,7 @@ SELECT
     COALESCE(csc.current_slot_count, 0) AS "Current Slot Count",
     
     -- Ideal class count (2/5 times children in bubble)
-    CEIL(COALESCE(md.confirmed_child_count, 0) * 2.0 / 5.0) AS "Ideal Class Count",
+    CEIL(COALESCE(md.active_child_count, 0) * 2.0 / 5.0) AS "Ideal Class Count",
     
     -- Current class count
     COALESCE(ccc.current_class_count, 0) AS "Current Class Count",
@@ -243,9 +234,9 @@ SELECT
     
     -- Percentage classes vs ideal classes (Current Class Count / Ideal Class Count * 100)
     CASE 
-        WHEN CEIL(COALESCE(md.confirmed_child_count, 0) * 2.0 / 5.0) > 0 
+        WHEN CEIL(COALESCE(md.active_child_count, 0) * 2.0 / 5.0) > 0 
         THEN ROUND(
-            (COALESCE(ccc.current_class_count, 0)::numeric / CEIL(COALESCE(md.confirmed_child_count, 0) * 2.0 / 5.0)::numeric) * 100, 
+            (COALESCE(ccc.current_class_count, 0)::numeric / CEIL(COALESCE(md.active_child_count, 0) * 2.0 / 5.0)::numeric) * 100, 
             2
         )
         ELSE NULL 
@@ -282,7 +273,7 @@ INNER JOIN latest_agreements la
 
 -- Join MOU details
 LEFT JOIN mou_details md 
-    ON md.partner_id = ap.partner_id
+    ON md.school_id = ap.partner_id::numeric
 
 -- Join CO details
 LEFT JOIN co_details cd 
