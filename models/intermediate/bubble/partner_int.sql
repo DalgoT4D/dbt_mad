@@ -35,6 +35,7 @@ select
     raw."low_income_resource_boolean" as low_income_resource,
     raw."confirmed_child_count_number" as confirmed_child_count,
     raw."partner_affiliation_type_text" as partner_affiliation_type,
+    raw."removed1_boolean" as removed,
     raw."_airbyte_raw_id",
     raw."_airbyte_extracted_at",
     raw."_airbyte_meta"
