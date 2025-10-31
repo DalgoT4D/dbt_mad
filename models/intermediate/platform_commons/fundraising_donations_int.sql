@@ -31,6 +31,9 @@ SELECT
     "donor_campaign_code" AS donor_campaign_code,
     "FundRaiseProgramName" AS fund_raise_program_name,
     "payment_campaign_code" AS payment_campaign_code,
-    "gateway_subscription_id" AS gateway_subscription_id
+    "gateway_subscription_id" AS gateway_subscription_id,
+    "opportunityId" AS opportunity_id,
+    "donationId" AS donation_id,
+    "campaignId" AS campaign_id
 
 FROM {{ source('source_platform_commons', 'fundraising_donations_int') }}
