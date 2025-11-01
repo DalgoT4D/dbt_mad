@@ -5,15 +5,35 @@
 -- - Partner name and MOU information
 -- - Child count metrics: confirmed (CRM), active (Bubble), and dropped (Bubble)
 
-WITH partners AS (
-    -- Base partner data
+WITH latest_partner_cos AS (
+    -- Latest CO assignment per partner from partner_cos_int
     SELECT
-        id AS partner_id,
-        partner_name,
-        created_by AS co_user_id,
-        removed
-    FROM {{ ref('partners_int') }}
-    WHERE removed = false
+        partner_id,
+        co_id AS co_user_id
+    FROM (
+        SELECT
+            partner_id,
+            co_id,
+            ROW_NUMBER() OVER (
+                PARTITION BY partner_id 
+                ORDER BY updated_at DESC, created_at DESC, id DESC
+            ) as rn
+        FROM {{ ref('partner_cos_int') }}
+    ) ranked
+    WHERE rn = 1
+),
+
+partners AS (
+    -- Base partner data with CO from partner_cos_int
+    SELECT
+        p.id AS partner_id,
+        p.partner_name,
+        COALESCE(pco.co_user_id, p.created_by) AS co_user_id,
+        p.removed
+    FROM {{ ref('partners_int') }} p
+    LEFT JOIN latest_partner_cos pco
+        ON p.id = pco.partner_id
+    WHERE p.removed = false
 ),
 
 converted_agreements AS (
@@ -220,4 +240,5 @@ LEFT JOIN partners p
 
 WHERE p.partner_id IS NULL  -- Only include schools not in CRM
   AND bp.partner_name IS NOT NULL
+  AND bp.removed = false  -- Only include non-removed partners
   AND (ac.active_child_count > 0 OR dc.dropped_child_count > 0)  -- Only include schools with children

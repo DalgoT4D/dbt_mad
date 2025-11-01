@@ -6,13 +6,33 @@
   )
 }}
 
+-- Latest CO assignment per partner from partner_cos_int
+WITH latest_partner_cos AS (
+    SELECT
+        partner_id,
+        co_id AS co_user_id
+    FROM (
+        SELECT
+            partner_id,
+            co_id,
+            ROW_NUMBER() OVER (
+                PARTITION BY partner_id 
+                ORDER BY updated_at DESC, created_at DESC, id DESC
+            ) as rn
+        FROM {{ ref('partner_cos_int') }}
+    ) ranked
+    WHERE rn = 1
+),
+
 -- Active partners with latest converted agreement
-WITH active_partners AS (
+active_partners AS (
     SELECT 
         p.id AS partner_id,
         p.partner_name,
-        p.created_by AS co_user_id
+        pco.co_user_id
     FROM {{ ref('partners_int') }} p
+    LEFT JOIN latest_partner_cos pco
+        ON p.id = pco.partner_id
     WHERE p.removed = false
 ),
 
