@@ -2,17 +2,37 @@
   config(
     materialized='table',
     schema='analytics',
-    description='Volunteer recruitment data with partner details, CO information, confirmed child counts from CRM, volunteer recruitment targets (4/5 of confirmed child count), and volunteer assignment metrics'
+    description='Volunteer recruitment data with partner details, CO information, confirmed child counts from CRM, volunteer recruitment targets (distinct count of active slot_class_section_id * 2), and volunteer assignment metrics'
   )
 }}
 
+-- Latest CO assignment per partner from partner_cos_int
+WITH latest_partner_cos AS (
+    SELECT
+        partner_id,
+        co_id AS co_user_id
+    FROM (
+        SELECT
+            partner_id,
+            co_id,
+            ROW_NUMBER() OVER (
+                PARTITION BY partner_id 
+                ORDER BY updated_at DESC, created_at DESC, id DESC
+            ) as rn
+        FROM {{ ref('partner_cos_int') }}
+    ) ranked
+    WHERE rn = 1
+),
+
 -- Active partners with latest converted agreement
-WITH active_partners AS (
+active_partners AS (
     SELECT 
         p.id AS partner_id,
         p.partner_name,
-        p.created_by AS co_user_id
+        pco.co_user_id
     FROM {{ ref('partners_int') }} p
+    LEFT JOIN latest_partner_cos pco
+        ON p.id = pco.partner_id
     WHERE p.removed = false
 ),
 
@@ -108,6 +128,19 @@ volunteers_assigned_to_class AS (
       AND scs.removed = false 
       AND cs.removed = false
     GROUP BY cs.school_id
+),
+
+-- Volunteer recruitment target: distinct count of active slot_class_section_id per school * 2
+volunteer_recruitment_targets AS (
+    SELECT 
+        cs.school_id,
+        COUNT(DISTINCT scs.slot_class_section_id) * 2 AS volunteer_recruitment_target
+    FROM {{ ref('slot_class_section_int') }} scs
+    INNER JOIN {{ ref('class_section_int') }} cs 
+        ON scs.class_section_id = cs.class_section_id
+    WHERE scs.removed = false 
+      AND scs.is_active = true
+    GROUP BY cs.school_id
 )
 
 -- Main query combining all data
@@ -123,8 +156,11 @@ SELECT
     -- Confirmed Child Count from CRM (MOU)
     COALESCE(md.confirmed_child_count, 0) AS "Confirmed Child Count (CRM)",
     
-    -- Volunteer Recruitment Target (4/5 times confirmed child count)
-    CEIL(COALESCE(md.confirmed_child_count, 0) * 4.0 / 5.0) AS "Volunteer Recruitment Target",
+    -- Volunteer Recruitment Target (distinct count of active slot_class_section_id * 2)
+    COALESCE(vrt.volunteer_recruitment_target, 0) AS "Volunteer Recruitment Target",
+    
+    -- Ideal Volunteer Recruitment Target (4/5 times confirmed child count)
+    CEIL(COALESCE(md.confirmed_child_count, 0) * 4.0 / 5.0) AS "Ideal Volunteer Recruitment Target",
     
     -- Volunteers Recruited
     COALESCE(vc.volunteer_count, 0) AS "Volunteers Recruited",
@@ -134,10 +170,10 @@ SELECT
     
     -- Percentage Volunteers Assigned to School (Recruited/Target)
     CASE 
-        WHEN CEIL(COALESCE(md.confirmed_child_count, 0) * 4.0 / 5.0) > 0 
+        WHEN COALESCE(vrt.volunteer_recruitment_target, 0) > 0 
         THEN ROUND(
-            (COALESCE(vc.volunteer_count, 0)::numeric / CEIL(COALESCE(md.confirmed_child_count, 0) * 4.0 / 5.0)::numeric) * 100, 
-            2
+            (COALESCE(vc.volunteer_count, 0)::numeric / COALESCE(vrt.volunteer_recruitment_target, 0)::numeric) * 100, 
+            5
         )
         ELSE NULL 
     END AS "Percentage Volunteers Assigned to School",
@@ -147,7 +183,7 @@ SELECT
         WHEN COALESCE(vc.volunteer_count, 0) > 0 
         THEN ROUND(
             (COALESCE(vac.volunteers_assigned_to_class, 0)::numeric / COALESCE(vc.volunteer_count, 0)::numeric) * 100, 
-            2
+            5
         )
         ELSE NULL 
     END AS "Percentage Volunteers Assigned to Class"
@@ -173,6 +209,10 @@ LEFT JOIN volunteer_counts vc
 -- Join volunteers assigned to class
 LEFT JOIN volunteers_assigned_to_class vac 
     ON vac.school_id = ap.partner_id::numeric
+
+-- Join volunteer recruitment targets
+LEFT JOIN volunteer_recruitment_targets vrt 
+    ON vrt.school_id = ap.partner_id::numeric
 
 -- Order by partner name
 ORDER BY ap.partner_name
