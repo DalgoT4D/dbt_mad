@@ -201,6 +201,10 @@ sources:
         identifier: subject
         description: Bubble subject master data
         loaded_at_field: _airbyte_extracted_at
+      - name: child_removal_log
+        identifier: child_removal_log
+        description: Bubble child removal log data
+        loaded_at_field: _airbyte_extracted_at
 
 models:
   - name: school_data_comparison
