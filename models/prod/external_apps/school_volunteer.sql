@@ -16,8 +16,8 @@ select
     sv.school_id,
     sv.volunteer_id,
     sv.removed,
-    sv.created_date,
-    sv.modified_date,
+    sv.created_date::timestamp without time zone as created_date,
+    sv.modified_date::timestamp without time zone as modified_date,
     
     -- Partner data columns
     p.partner_id,

@@ -131,6 +131,23 @@ dropped_children AS (
     WHERE removed = false 
       AND is_active = false
     GROUP BY school_id
+),
+
+actual_dropped_children AS (
+    -- Actual dropped child count based on removal_reason from child_removal_log_int
+    SELECT 
+        school_id,
+        COUNT(*) AS actual_dropped_child_count
+    FROM {{ ref('child_removal_log_int') }}
+    WHERE removed = false
+      AND removal_reason IN (
+          'Transferred to another school',
+          'Dropped out of school',
+          'Family does not want the child enrolled',
+          'Child no longer interested in participating',
+          'Inactive'
+      )
+    GROUP BY school_id
 )
 
 -- Schools in CRM (with converted agreements)
@@ -151,6 +168,7 @@ SELECT
     m.confirmed_child_count AS "Confirmed Child Count (CRM)",
     COALESCE(ac.active_child_count, 0) AS "Active Child Count (Bubble)",
     COALESCE(dc.dropped_child_count, 0) AS "Dropped Child Count (Bubble)",
+    COALESCE(adc.actual_dropped_child_count, 0) AS "Actual Dropped Child Count (Bubble)",
     
     -- Platform Presence
     CASE 
@@ -194,6 +212,10 @@ LEFT JOIN active_children ac
 LEFT JOIN dropped_children dc
     ON p.partner_id::numeric = dc.school_id::numeric
 
+-- Join with actual dropped children count
+LEFT JOIN actual_dropped_children adc
+    ON p.partner_id::numeric = adc.school_id::numeric
+
 UNION ALL
 
 -- Schools in Bubble but not in CRM
@@ -214,6 +236,7 @@ SELECT
     NULL AS "Confirmed Child Count (CRM)",
     COALESCE(ac.active_child_count, 0) AS "Active Child Count (Bubble)",
     COALESCE(dc.dropped_child_count, 0) AS "Dropped Child Count (Bubble)",
+    COALESCE(adc.actual_dropped_child_count, 0) AS "Actual Dropped Child Count (Bubble)",
     
     -- Platform Presence
     'BUBBLE' AS "Platform Presence",
@@ -233,6 +256,10 @@ LEFT JOIN active_children ac
 -- Join with dropped children count
 LEFT JOIN dropped_children dc
     ON bp.partner_id1::numeric = dc.school_id::numeric
+
+-- Join with actual dropped children count
+LEFT JOIN actual_dropped_children adc
+    ON bp.partner_id1::numeric = adc.school_id::numeric
 
 -- Exclude schools that are already in CRM
 LEFT JOIN partners p
