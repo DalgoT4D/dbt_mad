@@ -42,6 +42,7 @@ select
     pi.partner_name,
     pi.co_name,
     pi.city as partner_city,
+    pi.partner_id1 as partner_id,
 
     -- slot info (nullable)
     s.slot_name,
