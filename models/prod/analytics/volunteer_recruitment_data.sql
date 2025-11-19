@@ -2,7 +2,7 @@
   config(
     materialized='table',
     schema='analytics',
-    description='Volunteer recruitment data with partner details, CO information, confirmed child counts from CRM, volunteer recruitment targets (distinct count of active slot_class_section_id * 2), and volunteer assignment metrics'
+    description='Volunteer recruitment data with partner details, CO information, confirmed child counts from CRM, volunteer recruitment targets (number of active slots * 2/5 * number of active children), and volunteer assignment metrics'
   )
 }}
 
@@ -130,17 +130,30 @@ volunteers_assigned_to_class AS (
     GROUP BY cs.school_id
 ),
 
--- Volunteer recruitment target: distinct count of active slot_class_section_id per school * 2
+-- Active children count per school
+active_children AS (
+    SELECT 
+        school_id,
+        COUNT(*) AS active_child_count
+    FROM {{ ref('child_int') }}
+    WHERE removed = false 
+      AND is_active = true
+    GROUP BY school_id
+),
+
+-- Volunteer recruitment target: number of active slots * 2/5 * number of active children (rounded up to integer)
 volunteer_recruitment_targets AS (
     SELECT 
         cs.school_id,
-        COUNT(DISTINCT scs.slot_class_section_id) * 2 AS volunteer_recruitment_target
+        CEIL(COUNT(DISTINCT scs.slot_id) * (2.0 / 5.0) * COALESCE(ac.active_child_count, 0))::integer AS volunteer_recruitment_target
     FROM {{ ref('slot_class_section_int') }} scs
     INNER JOIN {{ ref('class_section_int') }} cs 
         ON scs.class_section_id = cs.class_section_id
+    LEFT JOIN active_children ac
+        ON cs.school_id = ac.school_id
     WHERE scs.removed = false 
       AND scs.is_active = true
-    GROUP BY cs.school_id
+    GROUP BY cs.school_id, ac.active_child_count
 )
 
 -- Main query combining all data
@@ -156,7 +169,7 @@ SELECT
     -- Confirmed Child Count from CRM (MOU)
     COALESCE(md.confirmed_child_count, 0) AS "Confirmed Child Count (CRM)",
     
-    -- Volunteer Recruitment Target (distinct count of active slot_class_section_id * 2)
+    -- Volunteer Recruitment Target (number of active slots * 2/5 * number of active children)
     COALESCE(vrt.volunteer_recruitment_target, 0) AS "Volunteer Recruitment Target",
     
     -- Ideal Volunteer Recruitment Target (4/5 times confirmed child count)
