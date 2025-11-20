@@ -1,0 +1,131 @@
+{{ config(materialized='table') }}
+
+SELECT
+  -- Partner core
+  p.id::integer AS partner_id,
+  p.partner_name,
+  p.address_line_1,
+  p.address_line_2,
+  p.city_id::integer,
+  p.state_id::integer,
+  cty.city_name AS city,
+  p.pincode::integer AS pincode,
+  p.lead_source,
+  p.school_type,
+  p.partner_affiliation_type,
+  p.total_child_count,
+  p.low_income_resource,
+  p.created_by::numeric::integer AS created_by,
+
+  -- Latest CO
+  latest_co.co_id::numeric::integer,
+
+  -- Latest POC (via poc_partners_int → pocs_int)
+  latest_poc.poc_name,
+  latest_poc.poc_contact,
+  latest_poc.poc_email,
+  latest_poc.poc_designation,
+
+  -- Classes as array of text
+  p.classes::text AS classes,
+
+  -- Latest meeting date (your “date of first contact”)
+  latest_meeting.meeting_date AS date_of_first_contact,
+
+  -- State name
+  st.state_name AS state,
+
+  -- Latest active MOU
+  latest_mou.mou_url,
+  latest_mou.mou_start_date,
+  latest_mou.mou_end_date,
+  latest_mou.mou_sign_date,
+
+  -- Confirmed child count from latest active MOU
+  latest_mou.confirmed_child_count,
+
+  -- Partner removed flag based on latest conversion_stage
+  CASE
+    WHEN latest_pa.conversion_stage = 'dropped' THEN TRUE
+    ELSE FALSE
+  END AS partner_removed,
+
+  -- Latest conversion stage
+  latest_pa.conversion_stage AS latest_conversion_stage,
+
+  -- Converted flag based on latest conversion_stage
+  CASE
+    WHEN latest_pa.conversion_stage = 'converted' THEN TRUE
+    ELSE FALSE
+  END AS converted,
+
+  -- Partner created/updated dates
+  p.created_at  AS partner_created_date,
+  p.updated_at  AS partner_updated_date
+
+FROM {{ ref('partners_int') }} p
+
+-- City name
+LEFT JOIN {{ ref('cities_int') }} cty
+  ON p.city_id::text = cty.id
+
+-- State name
+LEFT JOIN {{ ref('states_int') }} st
+  ON p.state_id::text = st.id
+
+-- Latest partner CO row
+LEFT JOIN LATERAL (
+  SELECT pci.co_id
+  FROM {{ ref('partner_cos_int') }} pci
+  WHERE pci.partner_id = p.id
+  ORDER BY pci.created_at DESC NULLS LAST
+  LIMIT 1
+) latest_co ON TRUE
+
+-- Latest POC row: get latest poc_partner, then join poc table
+LEFT JOIN LATERAL (
+  SELECT
+    poc.poc_name        AS poc_name,
+    poc.poc_contact     AS poc_contact,
+    poc.poc_email       AS poc_email,
+    poc.poc_designation AS poc_designation
+  FROM {{ ref('poc_partners_int') }} pp
+  JOIN {{ ref('pocs_int') }} poc
+    ON poc.id = pp.poc_id
+  WHERE pp.partner_id = p.id
+  ORDER BY pp.created_at DESC NULLS LAST
+  LIMIT 1
+) latest_poc ON TRUE
+
+-- Latest meeting row (for contact date)
+LEFT JOIN LATERAL (
+  SELECT m.meeting_date
+  FROM {{ ref('meetings_int') }} m
+  WHERE m.partner_id = p.id
+  ORDER BY m.meeting_date DESC NULLS LAST
+  LIMIT 1
+) latest_meeting ON TRUE
+
+-- Latest active MOU
+LEFT JOIN LATERAL (
+  SELECT
+    mo.mou_url,
+    mo.mou_start_date,
+    mo.mou_end_date,
+    mo.mou_sign_date,
+    mo.confirmed_child_count
+  FROM {{ ref('mous_int') }} mo
+  WHERE mo.partner_id = p.id
+    AND mo.mou_status = 'active'
+  ORDER BY mo.created_at DESC NULLS LAST
+  LIMIT 1
+) latest_mou ON TRUE
+
+-- Latest partner_agreement row
+LEFT JOIN LATERAL (
+  SELECT pa.conversion_stage
+  FROM {{ ref('partner_agreements_int') }} pa
+  WHERE pa.partner_id = p.id
+  ORDER BY pa.created_at DESC NULLS LAST
+  LIMIT 1
+) latest_pa ON TRUE
