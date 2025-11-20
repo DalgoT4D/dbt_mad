@@ -19,6 +19,8 @@ SELECT
 
   -- Latest CO
   latest_co.co_id::numeric::integer,
+  -- Latest CO name
+  latest_co_name.co_name,
 
   -- Latest POC (via poc_partners_int → pocs_int)
   latest_poc.poc_name,
@@ -26,8 +28,14 @@ SELECT
   latest_poc.poc_email,
   latest_poc.poc_designation,
 
-  -- Classes as array of text
-  p.classes::text AS classes,
+  -- Classes as array of text (handle JSON array or comma-separated string)
+  CASE
+    WHEN p.classes::text LIKE '[%' THEN (
+      SELECT array_agg(elem) FROM jsonb_array_elements_text(p.classes::jsonb) elem
+    )
+    WHEN p.classes IS NOT NULL AND p.classes::text <> '' THEN string_to_array(p.classes::text, ',')
+    ELSE NULL
+  END AS classes,
 
   -- Latest meeting date (your “date of first contact”)
   latest_meeting.meeting_date AS date_of_first_contact,
@@ -59,9 +67,10 @@ SELECT
     ELSE FALSE
   END AS converted,
 
-  -- Partner created/updated dates
-  p.created_at  AS partner_created_date,
-  p.updated_at  AS partner_updated_date
+  -- Partner created/updated dates (converted to IST / Asia/Kolkata)
+  -- `AT TIME ZONE 'Asia/Kolkata'` converts a timestamptz to local time (timestamp without time zone)
+  (p.created_at AT TIME ZONE 'Asia/Kolkata') AS partner_created_date,
+  (p.updated_at AT TIME ZONE 'Asia/Kolkata') AS partner_updated_date
 
 FROM {{ ref('partners_int') }} p
 
@@ -81,6 +90,14 @@ LEFT JOIN LATERAL (
   ORDER BY pci.created_at DESC NULLS LAST
   LIMIT 1
 ) latest_co ON TRUE
+
+-- Latest CO name from user_data_int
+LEFT JOIN LATERAL (
+  SELECT ud.user_display_name AS co_name
+  FROM {{ ref('user_data_int') }} ud
+  WHERE ud.user_id = latest_co.co_id
+  LIMIT 1
+) latest_co_name ON TRUE
 
 -- Latest POC row: get latest poc_partner, then join poc table
 LEFT JOIN LATERAL (
