@@ -24,8 +24,9 @@ with base as (
         opportunity_id,
         donation_id,
         campaign_id
-    from {{ ref('fundraising_donations_int') }}
-    where upper(payment_status) = 'PAID'
+            from {{ ref('fundraising_donations_int') }}
+            where upper(payment_status) = 'PAID'
+                and payment_date::date >= '2025-10-01'
 ),
 with_key as (
     select
