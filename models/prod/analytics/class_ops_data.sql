@@ -295,10 +295,11 @@ SELECT
     COALESCE(c2v.classes_with_2_volunteers_count, 0) AS "Classes with 2 Volunteers",
 
     -- Unscheduled class sections (created but never scheduled) for class sections that have children
+    -- NOTE: This only includes class_sections that have children (class_sections_with_children) and therefore excludes sections with no children
     COALESCE(c0v.unscheduled_class_section_count, 0) AS "Unscheduled Class Sections",
 
-    -- Classes with 0 volunteer (same as unscheduled class sections after fix)
-    COALESCE(c0v.unscheduled_class_section_count, 0) AS "Classes with 0 Volunteer",
+    -- Classes with 0 volunteers (equal to Unscheduled Class Sections per request)
+    COALESCE(c0v.unscheduled_class_section_count, 0) AS "Classes with 0 Volunteers",
 
     -- Scheduled class sections (distinct class_section_id that have slot_class_section rows)
     COALESCE(scheduled_cs.scheduled_class_sections_count, 0) AS "Scheduled Class Sections",

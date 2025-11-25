@@ -7,7 +7,7 @@ user_data as (
     select * from {{ ref('user_data') }}
 ),
 partner_data as (
-    select * from {{ ref('partner_int') }}
+    select * from {{ ref('partner_int') }} where removed = false
 ),
 slot_class_section_volunteer as (
     select * from {{ ref('slot_class_section_volunteer_int') }}
