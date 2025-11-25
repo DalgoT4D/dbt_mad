@@ -16,6 +16,7 @@ SELECT
   p.total_child_count,
   p.low_income_resource,
   p.created_by::numeric::integer AS created_by,
+  p.removed AS crm_partner_removed,
 
   -- Latest CO
   latest_co.co_id::numeric::integer,
@@ -51,12 +52,6 @@ SELECT
 
   -- Confirmed child count from latest active MOU
   latest_mou.confirmed_child_count,
-
-  -- Partner removed flag based on latest conversion_stage
-  CASE
-    WHEN latest_pa.conversion_stage = 'dropped' THEN TRUE
-    ELSE FALSE
-  END AS partner_removed,
 
   -- Latest conversion stage
   latest_pa.conversion_stage AS latest_conversion_stage,

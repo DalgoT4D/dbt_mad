@@ -25,28 +25,8 @@ WITH latest_partner_cos AS (
 ),
 
 -- Active partners with latest converted agreement
-active_partners AS (
-    SELECT 
-        p.id AS partner_id,
-        p.partner_name,
-        pco.co_user_id
-    FROM {{ ref('partners_int') }} p
-    LEFT JOIN latest_partner_cos pco
-        ON p.id = pco.partner_id
-    WHERE p.removed = false
-),
-
 -- Latest converted agreement per partner
-converted_agreements AS (
-    SELECT
-        id,
-        partner_id,
-        conversion_stage,
-        created_at
-    FROM {{ ref('partner_agreements_int') }}
-    WHERE conversion_stage = 'converted'
-),
-
+-- Latest partner agreement per partner (latest row regardless of conversion stage)
 latest_agreements AS (
     SELECT
         partner_id,
@@ -61,9 +41,24 @@ latest_agreements AS (
                 PARTITION BY partner_id 
                 ORDER BY created_at DESC, id DESC
             ) as rn
-        FROM converted_agreements
+        FROM {{ ref('partner_agreements_int') }}
     ) ranked
     WHERE rn = 1
+),
+
+-- Active partners: only partners whose latest partner_agreement conversion_stage = 'converted'
+active_partners AS (
+    SELECT 
+        p.id AS partner_id,
+        p.partner_name,
+        pco.co_user_id
+    FROM {{ ref('partners_int') }} p
+    LEFT JOIN latest_partner_cos pco
+        ON p.id = pco.partner_id
+    JOIN latest_agreements la
+        ON p.id::text = la.partner_id::text
+       AND la.conversion_stage = 'converted'
+    WHERE p.removed = false
 ),
 
 -- MOU details for each partner with confirmed child count (deduplicated)
