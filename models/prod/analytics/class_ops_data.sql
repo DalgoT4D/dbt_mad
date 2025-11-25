@@ -166,7 +166,10 @@ class_volunteer_summary AS (
 
 -- Class sections that have no scheduled slot_class_section rows (unscheduled classes)
 unscheduled_class_sections AS (
-    SELECT
+    -- Deduplicate class_section_id: join to child_class_section_int will create multiple rows
+    -- when a class_section has multiple children. We use DISTINCT to ensure we count
+    -- unscheduled class sections once per class_section_id.
+    SELECT DISTINCT
         cs.school_id,
         cs.class_section_id
     FROM {{ ref('class_section_int') }} cs
@@ -187,7 +190,8 @@ unscheduled_class_sections AS (
 -- and unscheduled class_sections (no slot_class_section rows)
 -- Count unscheduled class sections (created but never scheduled)
 unscheduled_class_section_counts AS (
-    SELECT school_id, COUNT(*) AS unscheduled_class_section_count
+    -- Count distinct class_section_id for unscheduled sections to avoid overcounting
+    SELECT school_id, COUNT(DISTINCT class_section_id) AS unscheduled_class_section_count
     FROM unscheduled_class_sections
     GROUP BY school_id
 ),
@@ -205,6 +209,8 @@ classes_with_2_volunteers AS (
     WHERE cvs.volunteer_count = 2
     GROUP BY school_id
 ),
+
+-- (removed) Scheduled classes with 0 volunteers: not possible — slot_class_section rows are always created with volunteer(s) per insert rules
 
     -- Total class_sections that have children (i.e., at least one child in the class_section)
     class_sections_with_children AS (
@@ -295,10 +301,10 @@ SELECT
     COALESCE(c2v.classes_with_2_volunteers_count, 0) AS "Classes with 2 Volunteers",
 
     -- Unscheduled class sections (created but never scheduled) for class sections that have children
-    -- NOTE: This only includes class_sections that have children (class_sections_with_children) and therefore excludes sections with no children
     COALESCE(c0v.unscheduled_class_section_count, 0) AS "Unscheduled Class Sections",
 
-    -- Classes with 0 volunteers (equal to Unscheduled Class Sections per request)
+    -- Classes with 0 volunteers: unscheduled class sections only (created but never scheduled), limited
+    -- to class_sections that have children (class_sections_with_children), per operational rules
     COALESCE(c0v.unscheduled_class_section_count, 0) AS "Classes with 0 Volunteers",
 
     -- Scheduled class sections (distinct class_section_id that have slot_class_section rows)
@@ -378,9 +384,9 @@ LEFT JOIN classes_with_1_volunteer c1v
 LEFT JOIN classes_with_2_volunteers c2v 
     ON c2v.school_id = ap.partner_id::numeric
 
--- Join unscheduled class section counts
 LEFT JOIN unscheduled_class_section_counts c0v 
     ON c0v.school_id = ap.partner_id::numeric
+
 
 -- Join scheduled class sections counts
 LEFT JOIN scheduled_class_sections scheduled_cs
