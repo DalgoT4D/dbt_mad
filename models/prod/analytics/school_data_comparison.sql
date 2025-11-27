@@ -36,34 +36,29 @@ partners AS (
     WHERE p.removed = false
 ),
 
-converted_agreements AS (
-    -- Latest converted agreement per partner
-    SELECT
-        id,
-        partner_id,
-        conversion_stage,
-        created_at
-    FROM {{ ref('partner_agreements_int') }}
-    WHERE conversion_stage = 'converted'
-),
-
 latest_agreements AS (
+    -- Latest agreement per partner. Only keep partners whose latest agreement
+    -- has conversion_stage = 'converted' and removed = false (i.e. not removed).
     SELECT
         partner_id,
         conversion_stage,
-        created_at
+        created_at,
+        removed
     FROM (
         SELECT
+            id,
             partner_id,
             conversion_stage,
+            removed,
             created_at,
             ROW_NUMBER() OVER (
-                PARTITION BY partner_id 
+                PARTITION BY partner_id
                 ORDER BY created_at DESC, id DESC
             ) as rn
-        FROM converted_agreements
+        FROM {{ ref('partner_agreements_int') }}
     ) ranked
-    WHERE rn = 1
+        WHERE rn = 1
+            AND conversion_stage = 'converted'
 ),
 
 mou_data AS (
