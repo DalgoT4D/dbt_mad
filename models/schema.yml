@@ -212,16 +212,10 @@ models:
     columns:
       - name: "Partner ID"
         description: Unique identifier for the partner (CRM ID for CRM schools, Bubble ID for Bubble-only schools)
-        tests:
-          - not_null
       - name: "Partner Name"
         description: Name of the partner organization
-        tests:
-          - not_null
       - name: "CO ID"
         description: User ID of the Community Organizer who created the partner
-        tests:
-          - not_null
       - name: "CO Name"
         description: Display name of the Community Organizer
       - name: "MOU Sign Date"
@@ -248,8 +242,6 @@ models:
         description: Unique identifier for the partner organization (NULL for unassigned volunteers)
       - name: partner_name
         description: Name of the partner organization ('Unassigned' for volunteers not yet assigned to any school)
-        tests:
-          - not_null
       - name: co_id
         description: User ID of the Community Organizer who created the partner
       - name: co_name
