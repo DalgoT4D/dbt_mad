@@ -105,7 +105,10 @@ volunteer_counts AS (
         sv.school_id,
         COUNT(*) AS volunteer_count
     FROM {{ ref('school_volunteer_int') }} sv
+    JOIN {{ ref('partner_int') }} p
+        ON sv.school_id = p.partner_id1
     WHERE sv.removed = false
+      AND p.removed = false
     GROUP BY sv.school_id
 ),
 
