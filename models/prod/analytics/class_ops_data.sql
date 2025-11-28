@@ -131,12 +131,17 @@ current_class_counts AS (
         -- Count scheduled class instances based on slot_class_section rows.
         -- We count distinct slot_class_section_id (each scheduled class occurrence),
         -- joined to class_section to ensure the class_section is active and not removed.
+        -- Only count class sections that have at least one child (to match class_sections_with_children logic)
         SELECT
                 cs.school_id,
                 COUNT(DISTINCT scs.slot_class_section_id) AS current_class_count
         FROM {{ ref('slot_class_section_int') }} scs
         JOIN {{ ref('class_section_int') }} cs
             ON scs.class_section_id = cs.class_section_id
+        -- Only include class sections that have at least one child (to match class_sections_with_children)
+        JOIN {{ ref('child_class_section_int') }} ccs
+            ON ccs.class_section_id = cs.class_section_id
+            AND (ccs.removed_boolean IS NULL OR ccs.removed_boolean = false)
         WHERE scs.removed = false
             AND cs.removed = false
             AND cs.is_active = true
@@ -147,6 +152,7 @@ current_class_counts AS (
 -- Compute volunteer counts per class_section, then aggregate to 0/1/2 counts so sums match current_class_count
 class_volunteer_summary AS (
     -- Aggregate volunteers at the slot_class_section (scheduled class) level so counts align with scheduled classes
+    -- Only include class sections that have at least one child (to match class_sections_with_children logic)
     SELECT
         cs.school_id,
         scs.slot_class_section_id,
@@ -155,6 +161,10 @@ class_volunteer_summary AS (
     FROM {{ ref('slot_class_section_int') }} scs
     JOIN {{ ref('class_section_int') }} cs
       ON scs.class_section_id = cs.class_section_id
+    -- Only include class sections that have at least one child (to match class_sections_with_children)
+    JOIN {{ ref('child_class_section_int') }} ccs
+      ON ccs.class_section_id = cs.class_section_id
+      AND (ccs.removed_boolean IS NULL OR ccs.removed_boolean = false)
     LEFT JOIN {{ ref('slot_class_section_volunteer_int') }} scsv
       ON scs.slot_class_section_id = scsv.slot_class_section_id
     WHERE scs.removed = false
@@ -227,12 +237,17 @@ classes_with_2_volunteers AS (
     ),
 
     -- Scheduled class sections: distinct class_section_id that have at least one slot_class_section row
+    -- AND have at least one child (to match class_sections_with_children logic)
     scheduled_class_sections AS (
             SELECT cs.school_id,
                          COUNT(DISTINCT scs.class_section_id) AS scheduled_class_sections_count
             FROM {{ ref('slot_class_section_int') }} scs
             JOIN {{ ref('class_section_int') }} cs
                 ON scs.class_section_id = cs.class_section_id
+            -- Only include class sections that have at least one child (to match class_sections_with_children)
+            JOIN {{ ref('child_class_section_int') }} ccs
+                ON ccs.class_section_id = cs.class_section_id
+                AND (ccs.removed_boolean IS NULL OR ccs.removed_boolean = false)
             WHERE scs.removed = false
                 AND cs.removed = false
                 AND cs.is_active = true
