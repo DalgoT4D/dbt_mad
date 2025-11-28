@@ -60,6 +60,7 @@ WHERE
   scs.removed = FALSE
   AND cs.removed = FALSE
   AND cs.is_active = TRUE
+  AND p.removed = FALSE
 ORDER BY scsv.volunteer_id, start_date
 
 
